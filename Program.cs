@@ -7,6 +7,7 @@ var databaseConfig = new DatabaseConfig();
 new DatabaseSetup(databaseConfig);
 
 var computerRepository = new ComputerRepository(databaseConfig);
+var labRepository = new LabRepository(databaseConfig); 
 
 // Routing
 var modelName = args[0];
@@ -105,4 +106,23 @@ if (modelName == "Computer")
        reader.Close();
        connection.Close();
     }*/
+
+    if (modelName == "Lab")
+    {
+        if(modelAction == "List")
+        {
+            Console.WriteLine("Lab List");
+            foreach (var lab in labRepository.GetAll())
+            {
+                var message = $"{lab.Id}, {lab.Number}, {lab.Name}, {lab.Block}";
+                Console.WriteLine(message);
+            }
+
+        }
+
+        if(modelAction == "New")
+        {
+            
+        }
+    }
 }
