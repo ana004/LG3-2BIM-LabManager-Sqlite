@@ -48,8 +48,8 @@ class ComputerRepository
         return computer;
     }
 
-    public Computer getById(int id) {
-        var connection = new SqliteConnection(databaseConfig.ConnectionString);
+    public Computer GetById(int id) {
+       var connection = new SqliteConnection(databaseConfig.ConnectionString);
        connection.Open();
 
        var command = connection.CreateCommand();
