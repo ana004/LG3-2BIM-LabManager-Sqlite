@@ -12,4 +12,8 @@ class Computer
         Ram = ram;
         Processor = processor;
     }
+
+    public Computer() {
+        
+    }
 }

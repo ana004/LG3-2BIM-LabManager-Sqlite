@@ -19,7 +19,8 @@ if (modelName == "Computer")
         Console.WriteLine("Computer List");
         foreach (var computer in computerRepository.GetAll())
         {
-            Console.WriteLine("{0}, {1}, {2}", computer.Id, computer.Ram, computer.Processor);
+            var message = $"{computer.Id}, {computer.Ram}, {computer.Processor}";
+            Console.WriteLine(message);
         }
     }
 

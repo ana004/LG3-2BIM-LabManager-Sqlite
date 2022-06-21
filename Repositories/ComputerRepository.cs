@@ -1,6 +1,7 @@
 using LabManager.Database;
 using LabManager.Models;
 using Microsoft.Data.Sqlite;
+using Dapper;
 
 namespace LabManager.Repositories;
 
@@ -12,87 +13,45 @@ class ComputerRepository
 
     public List<Computer> GetAll()
     {
-        var connection = new SqliteConnection(databaseConfig.ConnectionString);
+        using var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM Computers;";
-
-        var reader = command.ExecuteReader();
-
-        var computers = new List<Computer>();
-
-        while(reader.Read())
-        {
-            computers.Add(ReaderToComputer(reader));
-        }
-            
-        connection.Close();
-        
-        return computers;
+        return connection.Query<Computer>("SELECT * FROM Computers;").ToList();
     }
 
     public Computer Save(Computer computer) 
     {
-        var connection = new SqliteConnection(databaseConfig.ConnectionString);
+        using var connection = new SqliteConnection(databaseConfig.ConnectionString);
         connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO  Computers VALUES($id, $ram, $processor)";
-        command.Parameters.AddWithValue("$id", computer.Id);
-        command.Parameters.AddWithValue("$ram", computer.Ram);
-        command.Parameters.AddWithValue("$processor", computer.Processor);
-        command.ExecuteNonQuery();
-
-        connection.Close();
-
+        int id = computer.Id;
+        string ram = computer.Ram;
+        string processor = computer.Processor; 
+        connection.Execute("INSERT INTO Computers(id, ram, processor) VALUES(@id, @ram, @processor);", new {id, ram, processor});
         return computer;
     }
 
     public Computer GetById(int id) {
-       var connection = new SqliteConnection(databaseConfig.ConnectionString);
-       connection.Open();
-
-       var command = connection.CreateCommand();
-       command.CommandText = "SELECT * FROM Computers WHERE id=$id";
-       command.Parameters.AddWithValue("$id", id);
-
-       var reader = command.ExecuteReader();
-       reader.Read();
-       
-       var computer = ReaderToComputer(reader);
-
-       connection.Close();
-       
-       return computer;
+      using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+      connection.Open();
+      var computer = connection.QueryFirst<Computer>("SELECT * FROM Computers WHERE id=@id", new {id});
+      return computer;
     }
 
     public Computer Update(Computer computer) 
     {
-       var connection = new SqliteConnection(databaseConfig.ConnectionString);
+       using var connection = new SqliteConnection(databaseConfig.ConnectionString);
        connection.Open();
-       var command = connection.CreateCommand(); 
-       command.CommandText = "UPDATE Computers SET ram=$ram, processor=$processor WHERE id=$id";
-       command.Parameters.AddWithValue("$id", computer.Id);
-       command.Parameters.AddWithValue("$ram", computer.Ram);
-       command.Parameters.AddWithValue("$processor", computer.Processor);
-       command.ExecuteNonQuery();
-
-       connection.Close();
-       
+       int id = computer.Id;
+       string ram = computer.Ram;
+       string processor = computer.Processor; 
+       connection.Execute("UPDATE Computers SET ram=@ram, processor=@processor WHERE id=@id", new {id, ram, processor});
        return computer;
     }
 
     public void Delete(int id)
     {
-       var connection = new SqliteConnection(databaseConfig.ConnectionString);
+       using var connection = new SqliteConnection(databaseConfig.ConnectionString);
        connection.Open();
-       var command = connection.CreateCommand();
-       command.CommandText = "DELETE FROM Computers WHERE id=$id";
-       command.Parameters.AddWithValue("$id", id);
-
-       var reader = command.ExecuteReader();
-
-       connection.Close();
+       connection.Execute("DELETE FROM Computers WHERE id=@id", new {id});
     }
 
     public bool ExistsById(int id)
