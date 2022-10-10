@@ -1,51 +1,52 @@
-using LabManager.Database;
 using LabManager.Models;
-using Microsoft.Data.Sqlite;
 
 namespace LabManager.Repositories;
 
 class ComputerRepository
 {
-    private DatabaseConfig databaseConfig;
+    SystemContext context = new SystemContext();
 
-    public ComputerRepository(DatabaseConfig databaseConfig) => this.databaseConfig = databaseConfig;
+    private SystemContext systemContext;
 
-    public List<Computer> GetAll()
+    public ComputerRepository(SystemContext systemContext) => this.systemContext = systemContext;
+
+    public IEnumerable<Computer> GetAll()
     {
-        var connection = new SqliteConnection(databaseConfig.ConnectionString);
-        connection.Open();
-        var command = connection.CreateCommand();
-        command.CommandText = "SELECT * FROM Computers;";
-
-        var reader = command.ExecuteReader();
-
-        var computers = new List<Computer>();
-
-        while(reader.Read())
-        {
-            computers.Add(new Computer(reader.GetInt32(0), reader.GetString(1), reader.GetString(2)));
-        }
-            
-        connection.Close();
-        
+       IEnumerable<Computer> computers = context.Computers;
         return computers;
     }
 
     public Computer Save(Computer computer) 
     {
-        var connection = new SqliteConnection(databaseConfig.ConnectionString);
-        connection.Open();
-
-        var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO  Computers VALUES($id, $ram, $processor)";
-        command.Parameters.AddWithValue("$id", computer.Id);
-        command.Parameters.AddWithValue("$ram", computer.Ram);
-        command.Parameters.AddWithValue("$processor", computer.Processor);
-        command.ExecuteNonQuery();
-
-        connection.Close();
-
+        context.Computers.Add(computer);
+        context.SaveChanges();
         return computer;
+    }
+
+    public Computer GetById(int id) 
+    {
+        return context.Computers.Find(id);
+    }
+
+    public Computer Update(Computer computer)
+    {
+        Computer newComputer = GetById(computer.Id);
+        newComputer.Ram = computer.Ram;
+        newComputer.Processor = computer.Processor;
+        context.SaveChanges();
+        return computer;
+    }
+
+    public void Delete(int id)
+    {
+        Computer newComputer = GetById(id);
+        context.Computers.Remove(newComputer);
+        context.SaveChanges();
+    }
+
+    public bool ExistsById(int id)
+    {
+        return GetById(id) == null;
     }
 
 }

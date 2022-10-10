@@ -1,13 +1,11 @@
-﻿using Microsoft.Data.Sqlite;
-using LabManager.Database;
-using LabManager.Repositories;
+﻿using LabManager.Repositories;
 using LabManager.Models;
 
-var databaseConfig = new DatabaseConfig();
-new DatabaseSetup(databaseConfig);
+SystemContext context = new SystemContext();
+context.Database.EnsureCreated();
 
-var computerRepository = new ComputerRepository(databaseConfig);
-var labRepository = new LabRepository(databaseConfig); 
+var computerRepository = new ComputerRepository(context);
+// var labRepository = new LabRepository(context); 
 
 // Routing
 var modelName = args[0];
@@ -34,80 +32,53 @@ if (modelName == "Computer")
         computerRepository.Save(computer);
     }
 
-    /*if (modelAction == "Show")
-    {
-       var connection = new SqliteConnection("Data Source=database.db");
-       connection.Open(); 
-       int id = Convert.ToInt32(args[2]);
-       var command = connection.CreateCommand();
-       command.CommandText = "SELECT * FROM Computers WHERE id=5";
-       
-       var reader = command.ExecuteReader();
+    if(modelAction == "Show")
+    {   
+        var id = Convert.ToInt32(args[2]);
 
-
-       while(reader.Read())
-       {
-           if (reader.GetInt32(0) == id)
-            Console.WriteLine("{0}, {1}, {2}", reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
-       }
-
-       reader.Close();
-       connection.Close();
+        if(!computerRepository.ExistsById(id))
+        {
+            var computer = computerRepository.GetById(id);
+            Console.WriteLine("{0}, {1}, {2}", computer.Id, computer.Ram, computer.Processor);
+        }
+        else
+        {
+            Console.WriteLine($"Computador com id {id} não existe");
+        }
     }
 
     if (modelAction == "Update")
     {
-       var connection = new SqliteConnection("Data Source=database.db");
-       connection.Open(); 
-       int id = Convert.ToInt32(args[2]);
-       string ram = args[3];
-       string processor = args[4];
-       var command = connection.CreateCommand();
-       command.CommandText = "UPDATE Computers SET id=5, ram='2', processor='Intel Core' WHERE id=5";
+        int id = Convert.ToInt32(args[2]);
+        string ram = args[3];
+        string processor = args[4];
 
-       var reader = command.ExecuteReader();
-
-
-       while(reader.Read())
-       {
-           if (reader.GetInt32(0) == id)
-           { 
-            command.Parameters.AddWithValue("$id", id);
-            command.Parameters.AddWithValue("$ram", ram);
-            command.Parameters.AddWithValue("$processor", processor);
-           }
-       }
-
-       reader.Close();
-       connection.Close();
+        if(!computerRepository.ExistsById(id))
+        {
+            var computer = new Computer(id, ram, processor);
+            computerRepository.Update(computer);
+        } 
+        else
+        {
+           Console.WriteLine($"Computador com id {id} não existe"); 
+        }
     }
 
     if (modelAction == "Delete")
     {
-        var connection = new SqliteConnection("Data Source=database.db");
-        connection.Open();
         int id = Convert.ToInt32(args[2]);
-        var command = connection.CreateCommand();
-        command.CommandText = "DELETE FROM Computers WHERE id=4";
         
-       var reader = command.ExecuteReader();
+        if(!computerRepository.ExistsById(id))
+        {
+            computerRepository.Delete(id);
+        }
+        else
+        {
+            Console.WriteLine($"Computador com id {id} não existe");
+        }
+    }
 
-
-       while(reader.Read())
-       {
-           if (reader.GetInt32(0) == id)
-           {
-            command.Parameters.RemoveAt("@id");
-            command.Parameters.RemoveAt("@ram");
-            command.Parameters.RemoveAt("@processor");
-            }
-       }
-
-       reader.Close();
-       connection.Close();
-    }*/
-
-    if (modelName == "Lab")
+    /*if (modelName == "Lab")
     {
         if(modelAction == "List")
         {
@@ -124,5 +95,5 @@ if (modelName == "Computer")
         {
             
         }
-    }
+    }*/
 }
